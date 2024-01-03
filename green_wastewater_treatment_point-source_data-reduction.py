@@ -16,6 +16,8 @@ import sys
 import os
 import math
 from tqdm import tqdm
+from openpyxl import load_workbook
+import matplotlib.pyplot as plt
 import pickle
 import itertools
 import datetime
@@ -1189,9 +1191,7 @@ print('Summary DF Created!')
 #%% Plot Histrograms
 # ax = df_data_N['Mean Conc (mg/L)'].plot.hist(bins=12, alpha=0.5)
 plot = False
-if plot:
-    import matplotlib.pyplot as plt
-    
+if plot: 
     nutrient_type = 'Nitrogen'
     # nutrient_type = 'Phosphorus'
     if nutrient_type == 'Nitrogen':
@@ -1252,9 +1252,7 @@ with pd.ExcelWriter(raw_results_filename) as writer_raw:
     df_keys = pd.DataFrame.from_dict(dict_keys, orient='index', columns=['Values'])
     df_keys.to_excel(writer_raw, sheet_name='keys')
     
-# Move the keys sheet to the first sheet
-from openpyxl import load_workbook
-
+## Move the keys sheet to the first sheet
 # Load the Excel workbook
 workbook = load_workbook(raw_results_filename)
 
