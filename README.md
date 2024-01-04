@@ -17,6 +17,7 @@ One of the key challenges in the adoption of green infrastructure is the inheren
 2. **Data Input**: All inputs needed to run the code are found in the `inputs` folder. Input assumptions for the Green or Gray treatment methods can be updated in the `model_inputs.xlsx` spreadsheet.
 3. **Execution**: Run the script using `python green_wastewater_treatment_point-source_data-reduction.py`.
 4. **Results**: The script will output comparative results in terms of costs and emissions for each of the technologies which can be found in the `results` folder.
+5. **Post Processing**: After the results are generated, the `csv_creation_for_images.py` file can be used to generate csv files that summarize the results and can be used for figure generation.
 
 ## Contributions and Feedback
 We welcome contributions and feedback to improve this analysis. Please feel free to fork the repository, make changes, and submit a pull request. For feedback and suggestions, please open an issue in the repository.

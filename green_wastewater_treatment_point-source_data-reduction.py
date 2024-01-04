@@ -53,11 +53,8 @@ treat_conc_P = input_data[f'Level {min_treat_level}']['conc_P'] # mg/L
 
 
 farmer_incentive = 31 * 2.47105 # $/acre converted to $/ha - https://theoutcomesfund.com/news-release-2021-environmental-outcomes#:~:text=ANKENEY%2C%20IA%20and%20WASHINGTON%2C%20DC,than%20the%20totals%20from%20the
-# farmer_incentive = 10 * 2.47105 # $/acre converted to $/ha 
-# farmer_incentive = 0
 
 wetland_treatment_area_pct = (2+2*2)/100 # Percent required for the wetland according to 2016 Christenson 10 ways - very conservative. 0.5*2% is range with 2X being the maximum buffer size
-# wetland_treatment_area_pct = 9/100
 
 # Choose the HUC to use for the important data
 HUC_use = 'HUC6' #Choose the HUC level to group by: HUC6, HUC8, HUC10, HUC12
@@ -621,6 +618,7 @@ def treat_nutrients(df_data_in_N, df_data_in_P, df_treatment, treat_conc_N, trea
             df_temp['N Treated Cost ($/yr)'] = df_temp['N Treated Cost ($/yr)'] + df_temp['treated_land_cost']
             df_data_out['N Treated Cost ($/yr)'] = df_temp['N Treated Cost ($/yr)']
     
+    elif (df_treatment['Green/Gray'] == 'Green') & (df_treatment['Farmer Incentive'] == 'No'):
         df_data_out['N Treated Cost ($/yr)'] = df_data_out['N Load Treated (kg/yr)'] * df_treatment['2022Cost kgN']
         # Add land rental costs if wetland is used
         if 'Wetland' in df_treatment['Treatment Name']:
@@ -1211,7 +1209,6 @@ if plot:
     plt.show()  # Display the plot
 
 #%% Write the Files to Excel Files
-
 print('Saving Excel Files...')
 
 ## TODO: Change Results Folder Name
@@ -1219,13 +1216,21 @@ todays_date = datetime.datetime.now().strftime('%Y-%m-%d')
 folder_use = f'{todays_date} Level {min_treat_level}'
 conc_str = f'point_source_{int(treat_conc_N)}concN_{int(treat_conc_P)}concP_postGeoChanges_{NP_output_type}_{land_string}_{green_combos_string}_{limit_gray_string}_{concentration_limit_string}'
 
+conc_str = f'level-{min_treat_level}_{HUC_use}'
+
+
 # Check if the results folder exists
 if not os.path.exists(f'results/{folder_use}'):
     os.makedirs(f'results/{folder_use}') # Create the folder
     
 with pd.ExcelWriter(f'results/{folder_use}/results_summaries_{conc_str}.xlsx') as writer_summaries:
-    df_summary_compare.to_excel(writer_summaries, sheet_name='summary')
+    df_summary_compare.to_excel(writer_summaries, 
+                                sheet_name='summary', 
+                                index = False)
         
+    
+
+    
 raw_results_filename = f'results/{folder_use}/results_facility_{conc_str}.xlsx'
 
 with pd.ExcelWriter(raw_results_filename) as writer_raw:
@@ -1234,22 +1239,26 @@ with pd.ExcelWriter(raw_results_filename) as writer_raw:
     for treatment_green in treatments_green:
         count += 1
         dict_keys[str(count)] = f'{treatment_green}'
+        dict_green_treatments[f'{treatment_green} facility'] = dict_green_treatments[f'{treatment_green} facility'].rename_axis('Facility')
         dict_green_treatments[f'{treatment_green} facility'].to_excel(writer_raw, sheet_name=str(count))
         
     for treatment_gray in treatments_gray:
         count += 1
         dict_keys[str(count)] = f'{treatment_gray}'
+        dict_gray_treatments[f'{treatment_gray} facility'] = dict_gray_treatments[f'{treatment_gray} facility'].rename_axis('Facility')
         dict_gray_treatments[f'{treatment_gray} facility'].to_excel(writer_raw, sheet_name=str(count)) 
     
     count += 1
     dict_keys[str(count)] = 'Green Best Minimal Cost'
+    dict_best_green_option['minimal_cost'] = dict_best_green_option['minimal_cost'].rename_axis('Facility')
     dict_best_green_option['minimal_cost'].to_excel(writer_raw, sheet_name=str(count))
     
     count += 1
     dict_keys[str(count)] = 'Green Best Minimal Emissions'
+    dict_best_green_option['minimal_emissions'] = dict_best_green_option['minimal_emissions'].rename_axis('Facility')
     dict_best_green_option['minimal_emissions'].to_excel(writer_raw, sheet_name=str(count))
     
-    df_keys = pd.DataFrame.from_dict(dict_keys, orient='index', columns=['Values'])
+    df_keys = pd.DataFrame.from_dict(dict_keys, orient='index', columns=['Technology']).rename_axis('Sheet Name')
     df_keys.to_excel(writer_raw, sheet_name='keys')
     
 ## Move the keys sheet to the first sheet
